@@ -1,10 +1,13 @@
 import SwiftUI
+import Combine
 
 struct ExerciseRow: View {
     // State variables to track editing status
     @State private var isEditingExercise = false
     @State private var editedExerciseName = ""
     @State private var editedSetsBeingAdded: [SetInfo] = []
+    
+    @ObservedObject var viewModel: AddWorkoutViewModel
 
     // Properties
     let index: Int
@@ -19,6 +22,20 @@ struct ExerciseRow: View {
         return exercises[index]
     }
 
+    // Computed property to get the edited sets being added
+    var currentEditedSets: [SetInfo] {
+        if isEditingExercise {
+            return editedSetsBeingAdded
+        } else if let exercise = exercise {
+            return exercise.weightAndReps
+        } else {
+            return []
+        }
+    }
+
+    let debouncer = Debouncer(interval: 0.5) {
+    }
+
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
@@ -29,20 +46,28 @@ struct ExerciseRow: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.bottom, 4)
 
-                    ForEach(editedSetsBeingAdded.indices, id: \.self) { setIndex in
+                    ForEach(currentEditedSets.indices, id: \.self) { setIndex in
                         HStack {
-                            Text(editedSetsBeingAdded[setIndex].weight)
+                            TextField("Weight", text: $editedSetsBeingAdded[setIndex].weight)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                            
-                            Text(editedSetsBeingAdded[setIndex].reps)
+                                .keyboardType(.numberPad)
+                                .onReceive(Just(editedSetsBeingAdded[setIndex].weight)) { _ in
+                                    debouncer.debounce()
+                                }
+
+                            TextField("Reps", text: $editedSetsBeingAdded[setIndex].reps)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .keyboardType(.numberPad)
+                                .onReceive(Just(editedSetsBeingAdded[setIndex].reps)) { _ in
+                                    debouncer.debounce()
+                                }
                         }
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     }
                 } else {
                     // Display exercise name and sets as text
-                    if let exercise = exercise { // Check if exercise is not nil
+                    if let exercise = exercise {
                         Text(exercise.name)
                             .font(.headline)
                             .padding(.bottom, 4)
@@ -59,7 +84,7 @@ struct ExerciseRow: View {
                 }
             }
             .padding()
-            
+
             Spacer()
 
             Button(action: {
@@ -72,17 +97,24 @@ struct ExerciseRow: View {
                 Image(systemName: isEditingExercise ? "checkmark.circle.fill" : "pencil.circle.fill")
                     .font(.title)
                     .foregroundColor(.white)
-                    .padding(6) // Add padding to increase clickable area
+                    .padding(6)
                     .background(
                         Circle()
                             .fill(isEditingExercise ? Color.green : Color.blue)
-                            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4) // Add shadow effect
+                            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
                     )
             }
             .buttonStyle(PlainButtonStyle())
         }
+        .onAppear {
+            if isEditingExercise {
+                saveEditedExercise()
+            }
+        }
+
     }
-    
+        
+
     // Function to start editing the exercise
     private func startEditingExercise() {
         guard let exercise = exercise else { return }
@@ -90,7 +122,7 @@ struct ExerciseRow: View {
         editedExerciseName = exercise.name
         editedSetsBeingAdded = exercise.weightAndReps
     }
-    
+
     // Function to save the edited exercise
     private func saveEditedExercise() {
         isEditingExercise = false

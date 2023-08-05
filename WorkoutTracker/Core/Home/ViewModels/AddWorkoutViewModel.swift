@@ -18,49 +18,47 @@ class AddWorkoutViewModel: ObservableObject {
     // Reference to the Core Data persistence controller
     private let persistenceController = PersistenceController.shared
 
-    // Function to add a new set to the exercise
     func addSet() {
         setsBeingAdded.append(SetInfo(weight: "", reps: ""))
         showDeleteButtons = true
     }
 
     func addExercise() {
-            // Cancel any existing debouncer
-            debouncer?.cancel()
+        print(setsBeingAdded)
+        
+        if setsBeingAdded.count == 1 {
+            // Hide the keyboard if not clicking "Add Set"
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
+        let filteredSets = setsBeingAdded.filter { !$0.weight.isEmpty && !$0.reps.isEmpty }
 
-            // Create a new debouncer
-            debouncer = Debouncer(interval: 0.5) { [weak self] in
-                // Perform add exercise logic here
-                self?.internalAddExercise()
-            }
+        if !exerciseName.isEmpty && !filteredSets.isEmpty {
+            // Create a new exercise
+            let newExercise = Exercise(
+                name: exerciseName,
+                weightAndReps: filteredSets,
+                personalRecordDate: Date(),
+                personalRecordWeight: 0,
+                personalRecordReps: 0
+            )
+            exercises.append(newExercise)
+            exerciseSaved = true
+            
+            isEditing = true
 
-            // Start the debouncer
-            debouncer?.debounce()
+            // Reset showDeleteButtons when adding an exercise
+            showDeleteButtons = false
         }
 
-        private func internalAddExercise() {
-            let filteredSets = setsBeingAdded.filter { !$0.weight.isEmpty && !$0.reps.isEmpty }
-
-            if !exerciseName.isEmpty && !filteredSets.isEmpty {
-                // Create a new exercise
-                let newExercise = Exercise(
-                    name: exerciseName,
-                    weightAndReps: filteredSets,
-                    personalRecordDate: Date(),
-                    personalRecordWeight: 0,
-                    personalRecordReps: 0
-                )
-                exercises.append(newExercise)
-                exerciseSaved = true
-
-                // Reset showDeleteButtons when adding an exercise
-                showDeleteButtons = false
-            }
-
-            // Clear input fields after adding exercise
-            exerciseName = ""
-            setsBeingAdded = [SetInfo(weight: "", reps: "")]
-        }
+        // Clear input fields after adding exercise
+        exerciseName = ""
+        isEditing = false
+    }
+    
+    // Function to reset the setsBeingAdded array
+    func resetSetsBeingAdded() {
+        setsBeingAdded = [SetInfo(weight: "", reps: "")]
+    }
 
     // Function to delete a set from the exercise
     func deleteSet(at index: Int) {

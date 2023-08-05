@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AddWorkoutView: View {
     @Binding var savedWorkouts: [Workout]
-    @ObservedObject private var viewModel = AddWorkoutViewModel()
+    @ObservedObject var viewModel = AddWorkoutViewModel()
     
     @Environment(\.colorScheme) var colorScheme
 
@@ -24,7 +24,7 @@ struct AddWorkoutView: View {
                     List {
                         ForEach(viewModel.exercises.indices, id: \.self) { index in
                             // ExerciseRow displays each exercise's sets
-                            ExerciseRow(index: index, exercises: $viewModel.exercises, exerciseSaved: $viewModel.exerciseSaved)
+                            ExerciseRow(viewModel: viewModel, index: index, exercises: $viewModel.exercises, exerciseSaved: $viewModel.exerciseSaved)
                         }
                         
                         .onDelete { indexSet in
@@ -46,6 +46,7 @@ struct AddWorkoutView: View {
 
                             // Loop through sets being added
                             ForEach(viewModel.setsBeingAdded.indices, id: \.self) { index in
+                                let _ = print("Index", index)
                                 HStack {
                                     // Text field for entering weight
                                     TextField("Weight", text: $viewModel.setsBeingAdded[index].weight)
@@ -66,11 +67,15 @@ struct AddWorkoutView: View {
                                         }
                                         .buttonStyle(PlainButtonStyle())
                                     }
+                                    let _ = print("G", index)
                                 }
                                 .padding(.horizontal)
                                 .padding(.vertical, 8) // Set a custom vertical padding value
                             }
-
+                            .onChange(of: viewModel.exercises) { _ in
+                                viewModel.resetSetsBeingAdded() // Reset the setsBeingAdded array.
+                            }
+                            
                             // Button to add a new set
                             Button(action: viewModel.addSet) {
                                 Text("Add Set")
@@ -86,6 +91,7 @@ struct AddWorkoutView: View {
                                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                                 }
                                 viewModel.addExercise()
+
                             }) {
                                 HStack {
                                     Image(systemName: "plus.circle.fill")
@@ -155,6 +161,7 @@ struct AddWorkoutView: View {
                 }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
