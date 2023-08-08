@@ -30,13 +30,12 @@ class AddWorkoutViewModel: ObservableObject {
             // Hide the keyboard if not clicking "Add Set"
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
-        let filteredSets = setsBeingAdded.filter { !$0.weight.isEmpty && !$0.reps.isEmpty }
 
-        if !exerciseName.isEmpty && !filteredSets.isEmpty {
+        if !exerciseName.isEmpty {
             // Create a new exercise
             let newExercise = Exercise(
                 name: exerciseName,
-                weightAndReps: filteredSets,
+                weightAndReps: setsBeingAdded,
                 personalRecordDate: Date(),
                 personalRecordWeight: 0,
                 personalRecordReps: 0

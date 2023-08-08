@@ -30,10 +30,6 @@ struct WorkoutDetailView: View {
                     }
                 }
                 .padding(.vertical, 20)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.secondary.opacity(0.1))
-                )
                 .padding(.horizontal)
                 .listRowInsets(EdgeInsets())
             }

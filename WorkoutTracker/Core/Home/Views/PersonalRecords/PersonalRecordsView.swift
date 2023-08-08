@@ -64,38 +64,3 @@ struct PersonalRecordsView: View {
     }
 
 }
-
-
-
-struct PersonalRecordsView_Previews: PreviewProvider {
-    static var previews: some View {
-        let context = PersistenceController.shared.container.viewContext
-        
-        // Create some dummy exercise entities for preview
-        let exercise1 = ExerciseEntity(context: context)
-        exercise1.name = "Bench Press"
-        exercise1.personalRecordWeight = 225
-        exercise1.personalRecordReps = 5
-        
-        let exercise2 = ExerciseEntity(context: context)
-        exercise2.name = "Squat"
-        exercise2.personalRecordWeight = 315
-        exercise2.personalRecordReps = 3
-        
-        let exercise3 = ExerciseEntity(context: context)
-        exercise3.name = "Deadlift"
-        exercise3.personalRecordWeight = 405
-        exercise3.personalRecordReps = 1
-        
-        // Save the context
-        do {
-            try context.save()
-        } catch {
-            fatalError("Error saving preview context: \(error)")
-        }
-        
-        return PersonalRecordsView()
-            .environment(\.managedObjectContext, context)
-            //.preferredColorScheme(.dark) // Set preferred color scheme to Dark Mode
-    }
-}

@@ -3,6 +3,7 @@ import SwiftUI
 struct AddWorkoutView: View {
     @Binding var savedWorkouts: [Workout]
     @ObservedObject var viewModel = AddWorkoutViewModel()
+    @State private var isWorkoutSaved = false
     
     @Environment(\.colorScheme) var colorScheme
 
@@ -17,6 +18,7 @@ struct AddWorkoutView: View {
                             .padding()
                             .padding(.horizontal)
                             .padding(.top, 20)
+                            .autocapitalization(.words) // Auto capitalize words
                         Spacer()
                     }
 
@@ -26,13 +28,7 @@ struct AddWorkoutView: View {
                             // ExerciseRow displays each exercise's sets
                             ExerciseRow(viewModel: viewModel, index: index, exercises: $viewModel.exercises, exerciseSaved: $viewModel.exerciseSaved)
                         }
-                        
-                        .onDelete { indexSet in
-                            viewModel.exercises.remove(atOffsets: indexSet)
-                        }
-                        .onMove { indices, newOffset in
-                            viewModel.exercises.move(fromOffsets: indices, toOffset: newOffset)
-                        }
+
                         .listStyle(PlainListStyle())
                         .listRowBackground(colorScheme == .dark ? Color(#colorLiteral(red: 0.05311966687, green: 0.05311966687, blue: 0.05311966687, alpha: 1)) : Color.white)
                         
@@ -43,6 +39,7 @@ struct AddWorkoutView: View {
                                 .textFieldStyle(LighterBorderTextFieldStyleTitle()) // Apply the custom style
                                 .padding()
                                 .fontWeight(.medium) // Set the font size to .title
+                                .autocapitalization(.words) // Auto capitalize words
 
                             // Loop through sets being added
                             ForEach(viewModel.setsBeingAdded.indices, id: \.self) { index in
@@ -117,11 +114,29 @@ struct AddWorkoutView: View {
                     }
                     
                     Spacer()
+                    
+                    // Display message when workout is saved
+                    if isWorkoutSaved && !$viewModel.showAlert.wrappedValue {
+                        VStack {
+                            Text("Workout Saved Succesfully 🎊")
+                                .foregroundColor(.white)
+                                .padding()
+                                .animation(.easeInOut(duration: 0.5))
+                                .onAppear {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { // Display for 2 seconds
+                                        withAnimation {
+                                            isWorkoutSaved = false
+                                        }
+                                    }
+                                }
+                        }
+                    }
 
                     // "Save Workout" button
                     if !viewModel.isEditing {
                         Button(action: {
                             viewModel.saveWorkout(savedWorkouts: &savedWorkouts)
+                            isWorkoutSaved = true
                         }) {
                             Text("Save Workout")
                                 .font(.title3)
@@ -144,7 +159,7 @@ struct AddWorkoutView: View {
             
             // Show an alert for input errors
             .alert(isPresented: $viewModel.showAlert) {
-                Alert(title: Text("Error"), message: Text("All fields must be entered."), dismissButton: .default(Text("OK"), action: {
+                Alert(title: Text("Error"), message: Text("All fields must be entered."), dismissButton: .default(Text("OK"), action: {isWorkoutSaved = false
                 }))
             }
             

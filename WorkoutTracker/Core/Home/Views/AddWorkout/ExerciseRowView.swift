@@ -13,6 +13,19 @@ struct ExerciseRow: View {
     let index: Int
     @Binding var exercises: [Exercise]
     @Binding var exerciseSaved: Bool
+    
+    // Function to add a new set
+    private func addSet() {
+        editedSetsBeingAdded.append(SetInfo(weight: "", reps: ""))
+    }
+    
+    // Function to remove a set
+    private func removeSet(at index: Int) {
+        guard editedSetsBeingAdded.indices.contains(index) else {
+            return
+        }
+        editedSetsBeingAdded.remove(at: index)
+    }
 
     // Computed property to get the current exercise
     var exercise: Exercise? {
@@ -40,11 +53,14 @@ struct ExerciseRow: View {
         HStack {
             VStack(alignment: .leading) {
                 if isEditingExercise {
-                    // Display exercise name and sets in editable text fields
-                    TextField("Exercise Name", text: $editedExerciseName)
-                        .font(.headline)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.bottom, 4)
+                    
+                    HStack{
+                        // Display exercise name and sets in editable text fields
+                        TextField("Exercise Name", text: $editedExerciseName)
+                            .font(.headline)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(.bottom, 4)
+                    }
 
                     ForEach(currentEditedSets.indices, id: \.self) { setIndex in
                         HStack {
@@ -64,7 +80,18 @@ struct ExerciseRow: View {
                         }
                         .font(.subheadline)
                         .foregroundColor(.gray)
+                        
                     }
+
+                    // Add Set Button
+                    Button(action: {
+                        addSet()
+                    }) {
+                        Text("Add Set")
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .frame(maxWidth: .infinity, alignment: .center) // Center the button horizontally
                 } else {
                     // Display exercise name and sets as text
                     if let exercise = exercise {
@@ -87,48 +114,6 @@ struct ExerciseRow: View {
 
             Spacer()
 
-            Button(action: {
-                if isEditingExercise {
-                    saveEditedExercise()
-                } else {
-                    startEditingExercise()
-                }
-            }) {
-                Image(systemName: isEditingExercise ? "checkmark.circle.fill" : "pencil.circle.fill")
-                    .font(.title)
-                    .foregroundColor(.white)
-                    .padding(6)
-                    .background(
-                        Circle()
-                            .fill(isEditingExercise ? Color.green : Color.blue)
-                            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-                    )
             }
-            .buttonStyle(PlainButtonStyle())
-        }
-        .onAppear {
-            if isEditingExercise {
-                saveEditedExercise()
-            }
-        }
-
-    }
-        
-
-    // Function to start editing the exercise
-    private func startEditingExercise() {
-        guard let exercise = exercise else { return }
-        isEditingExercise = true
-        editedExerciseName = exercise.name
-        editedSetsBeingAdded = exercise.weightAndReps
-    }
-
-    // Function to save the edited exercise
-    private func saveEditedExercise() {
-        isEditingExercise = false
-        guard var exercise = exercise else { return }
-        exercise.name = editedExerciseName
-        exercise.weightAndReps = editedSetsBeingAdded
-        exercises[index] = exercise
     }
 }

@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import WorkoutTracker
+@testable import GymCharts
 
 final class WorkoutTrackerTests: XCTestCase {
 

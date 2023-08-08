@@ -31,12 +31,23 @@ struct ExerciseCell: View {
         }
         
         return VStack(alignment: .leading, spacing: 8) {
-            // Exercise name
-            Text(exercise.name ?? "")
-                .padding(.top, 10)
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(isDarkMode ? .white : .black)
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(exercise.name ?? "")
+                        .padding(.top, 10)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(isDarkMode ? .white : .black)
+                    
+                    if let prDate = exercise.personalRecordDate {
+                        Text("PR Date: \(formattedDate(prDate))")
+                            .font(.subheadline)
+                            .foregroundColor(isDarkMode ? .white : .black)
+                    }
+                }
+                
+                Spacer() // To push the PR weight and reps to the right
+            }
             
             if !isDarkMode {
                 // Divider for light mode
@@ -77,5 +88,13 @@ struct ExerciseCell: View {
         .background(backgroundView)
         .cornerRadius(20)
         .shadow(color: isDarkMode ? Color.clear : Color.blue.opacity(0.3), radius: 5, x: 0, y: 2) // Add subtle shadow for light mode
+    }
+    
+    // Function to format date as string
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
     }
 }
