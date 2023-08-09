@@ -25,6 +25,7 @@ struct HistoryView: View {
         }
     }
 
+
     // Create a computed property to generate the sorted list of history entries
     var sortedWorkouts: [HistoryEntry] {
         // Flatten the nested dictionary and organize data into HistoryEntry structs using compactMap
